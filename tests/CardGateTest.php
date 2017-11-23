@@ -42,9 +42,9 @@ class CardGateTest extends TestCase {
 
 		$this->assertCount(1, $this->gate->getCards($this->email));
 
-		$this->assertCount(1, $this->gate->getCards($this->phone));
+		$this->assertCount(1, $cards = $this->gate->getCards($this->phone));
 
-		return $card;
+		return $cards[0];
 	}
 
 	/**
