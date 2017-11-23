@@ -42,7 +42,8 @@ class Card_Gate {
 			'base_uri' => $this->config->paystack['base_uri'],
 			'headers' => array(
 				'Authorization' => 'Bearer '.$key
-			)
+			),
+			'http_errors' => false
 		));
 	}
 

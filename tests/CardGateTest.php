@@ -55,6 +55,8 @@ class CardGateTest extends TestCase {
 
 		$this->assertObjectHasAttribute('data', $result);
 
+		// file_put_contents(__DIR__.'/log.txt', json_encode($result));
+
 		$complete_trans = function($result) {
 			if($result->data->status === 'send_otp') {
 				$result = $this->gate->submitOTP($this->otp, $result->data->reference);
