@@ -63,9 +63,6 @@ class CardGateTest extends TestCase {
 			if($result->data->status === 'send_otp') {
 				$result = $this->gate->submitOTP($this->otp, $result->data->reference);
 			}
-			else if($result->data->status === 'send_phone') {
-				$result = $this->gate->submitPhone($this->phone, $result->data->reference);
-			}
 			return $result;
 		};
 
