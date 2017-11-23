@@ -74,6 +74,8 @@ class Card_Gate {
 
 		$result = json_decode($response->getBody());
 
+		if($result->status === false) return $status;
+
 		// Create a new card object
 		$data = $result->data;
 		$card = array(
@@ -82,6 +84,7 @@ class Card_Gate {
 			'card_type' => $data->card_type,
 			'first_six' => $data->bin,
 			'last_four' => $data->last4,
+			'hashed_card_number' => sha1($card_number),
 			'exp_month' => $data->exp_month,
 			'exp_year' => $data->exp_year,
 			'bank' => $data->bank,
@@ -154,7 +157,7 @@ class Card_Gate {
 		$response = $this->client->post($paystack['debit_card'], array('json' => $params));
 		$result = json_decode($response->getBody());
 
-		if($result->data->status == 'success') {
+		if($result->status && $result->data->status == 'success') {
 			$auth_code = $result->data->authorization->authorization_code;
 
 			$card = (new Card)->getCard(array('authorization_code' => $auth_code));
@@ -182,7 +185,7 @@ class Card_Gate {
 		$response = $this->client->post($paystack['submit_otp'], array('json' => $params));
 		$result = json_decode($response->getBody());
 
-		if($result->data->status == 'success') {
+		if($result->status && $result->data->status == 'success') {
 			$auth_code = $result->data->authorization->authorization_code;
 
 			$card = (new Card)->getCard(array('authorization_code' => $auth_code));
@@ -210,7 +213,7 @@ class Card_Gate {
 		$response = $this->client->post($paystack['submit_phone'], array('json' => $params));
 		$result = json_decode($response->getBody());
 
-		if($result->data->status == 'success') {
+		if($result->status && $result->data->status == 'success') {
 			$auth_code = $result->data->authorization->authorization_code;
 
 			$card = (new Card)->getCard(array('authorization_code' => $auth_code));
@@ -232,7 +235,7 @@ class Card_Gate {
 		$response = $this->client->get($paystack['tranx_status']($reference));
 		$result = json_decode($response->getBody());
 
-		if($result->data->status == 'success') {
+		if($result->status && $result->data->status == 'success') {
 			$auth_code = $result->data->authorization->authorization_code;
 
 			$card = (new Card)->getCard(array('authorization_code' => $auth_code));

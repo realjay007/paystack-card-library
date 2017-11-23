@@ -63,6 +63,12 @@ class Card implements \JsonSerializable {
 	protected $last_four;
 
 	/**
+	 * Hashed card number
+	 * @var string
+	 */
+	protected $hashed_card_number;
+
+	/**
 	 * Month of card expiry in PHP 'm' format
 	 * @var string
 	 */
@@ -165,6 +171,14 @@ class Card implements \JsonSerializable {
 	 */
 	public function getLastFour(): string {
 		return $this->last_four;
+	}
+
+	/**
+	 * Return hashed card number
+	 * @return string
+	 */
+	public function hashedCardNumber(): string {
+		return $this->hashed_card_number;
 	}
 
 	/**
