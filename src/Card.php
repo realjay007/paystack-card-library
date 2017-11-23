@@ -39,6 +39,12 @@ class Card implements \JsonSerializable {
 	protected $email;
 
 	/**
+	 * Card owner's phone
+	 * @var string
+	 */
+	protected $phone;
+
+	/**
 	 * Authorization code from paystack returned after card is initialised
 	 * @var string
 	 */
@@ -139,6 +145,14 @@ class Card implements \JsonSerializable {
 	 */
 	public function getEmail(): string {
 		return $this->email;
+	}
+
+	/**
+	 * Return user's phone
+	 * @return string
+	 */
+	public function getPhone(): string {
+		return $this->phone;
 	}
 
 	/**

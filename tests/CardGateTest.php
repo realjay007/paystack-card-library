@@ -28,7 +28,7 @@ class CardGateTest extends TestCase {
 	}
 
 	public function testAddCard(): Card {
-		$card = $this->gate->addCard($this->email, $this->card_number, $this->card_cvv, $this->exp_month, $this->exp_year);
+		$card = $this->gate->addCard($this->phone, $this->email, $this->card_number, $this->card_cvv, $this->exp_month, $this->exp_year);
 		
 		$this->assertInstanceOf(Card::class, $card);
 
@@ -41,6 +41,8 @@ class CardGateTest extends TestCase {
 	public function testGetCards($card) {
 
 		$this->assertCount(1, $this->gate->getCards($this->email));
+
+		$this->assertCount(1, $this->gate->getCards($this->phone));
 
 		return $card;
 	}

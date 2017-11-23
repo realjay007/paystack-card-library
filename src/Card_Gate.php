@@ -49,6 +49,7 @@ class Card_Gate {
 
 	/**
 	 * Tokenise card and add to db
+	 * @param string $phone User's phone number
 	 * @param string $email Card owner's email, used as user id
 	 * @param string $card_number
 	 * @param string $cvv
@@ -56,7 +57,7 @@ class Card_Gate {
 	 * @param string exp_year
 	 * @return Card
 	 */
-	public function addCard(string $email, string $card_number, string $cvv, string $exp_month, string $exp_year): Card {
+	public function addCard(string $phone, string $email, string $card_number, string $cvv, string $exp_month, string $exp_year): Card {
 		$paystack = $this->config->paystack;
 
 		// Tokenise the card
@@ -74,12 +75,13 @@ class Card_Gate {
 
 		$result = json_decode($response->getBody());
 
-		if($result->status === false) return $status;
+		if($result->status === false) return $result;
 
 		// Create a new card object
 		$data = $result->data;
 		$card = array(
 			'email' => $email,
+			'phone' => $phone,
 			'authorization_code' => $data->authorization_code,
 			'card_type' => $data->card_type,
 			'first_six' => $data->bin,
@@ -98,11 +100,16 @@ class Card_Gate {
 
 	/**
 	 * Get a user's cards
-	 * @param string $email
+	 * @param string $email_or_phone
 	 * @return array
 	 */
-	public function getCards(string $email): array {
-		return (new Card)->getCards(array('email' => $email));
+	public function getCards(string $email_or_phone): array {
+		$email_or_phone = strtolower(trim($email_or_phone));
+		if(filter_var($email_or_phone, FILTER_VALIDATE_EMAIL)) {
+			$query = array('email' => $email_or_phone);
+		}
+		else $query = array('phone' => $email_or_phone);
+		return (new Card)->getCards($query);
 	}
 
 	/**
