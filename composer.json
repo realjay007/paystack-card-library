@@ -1,5 +1,5 @@
 {
-	"name": "paystack-card",
+	"name": "paystack-cards",
 	"description": "Card library for paystack using php and mongodb",
 	"require": {
 		"mongodb/mongodb": "^1.1",
