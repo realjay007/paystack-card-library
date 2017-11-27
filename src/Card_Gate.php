@@ -55,9 +55,9 @@ class Card_Gate {
 	 * @param string $cvv
 	 * @param string $exp_month
 	 * @param string exp_year
-	 * @return Card
+	 * @return Card on success, stdClass on failure
 	 */
-	public function addCard(string $phone, string $email, string $card_number, string $cvv, string $exp_month, string $exp_year): Card {
+	public function addCard(string $phone, string $email, string $card_number, string $cvv, string $exp_month, string $exp_year) {
 		$paystack = $this->config->paystack;
 
 		// Tokenise the card
