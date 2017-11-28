@@ -30,6 +30,9 @@ $config['submit_otp'] = '/charge/submit_otp';
 // Submit Phone
 $config['submit_phone'] = '/charge/submit_phone';
 
+// Submit PIN
+$config['submit_pin'] = '/charge/submit_pin';
+
 // Check transaction status
 $config['tranx_status'] = function(string $ref) {
 	return '/charge/'.$ref;

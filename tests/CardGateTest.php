@@ -53,16 +53,18 @@ class CardGateTest extends TestCase {
 	public function testDebitCard($card) {
 		$amount = 5000.00;
 
-		$result = $this->gate->debitCard($card, $amount, $this->pin);
+		$result = $this->gate->debitCard($card, $amount);
 
 		$this->assertObjectHasAttribute('data', $result);
 
 		// file_put_contents(__DIR__.'/log.txt', json_encode($result));
 
-		$complete_trans = function($result) {
-			if($result->data->status === 'send_otp') {
-				$result = $this->gate->submitOTP($this->otp, $result->data->reference);
-			}
+		$complete_trans = function($result) use ($card) {
+			static $runs = 0;
+			// file_put_contents('log'.$runs.'.txt', var_export($result, true));
+			if($runs > 4) throw new \Exception('Too many api calls');
+			$result = $this->gate->completeCharge($card, $info = substr($result->data->status, 5), $this->$info, $result->data->reference);
+			++$runs;
 			return $result;
 		};
 

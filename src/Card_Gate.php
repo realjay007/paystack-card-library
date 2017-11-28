@@ -140,10 +140,10 @@ class Card_Gate {
 	 * Debit a card
 	 * @param string|Card $card Card object or card id
 	 * @param float $amount in naira
-	 * @param string $card_pin
+	 * @param string $card_pin Optional card pin
 	 * @return object Paystack response
 	 */
-	public function debitCard($card, float $amount, string $card_pin) {
+	public function debitCard($card, float $amount, string $card_pin = '') {
 		$paystack = $this->config->paystack;
 		// Get card from db
 		if(is_string($card)) {
@@ -151,90 +151,75 @@ class Card_Gate {
 				'card_id' => $card
 			));
 		}
-		if(!($card instanceof Card)) throw new Exception('Invalid card paramter');
+		if(!($card instanceof Card)) throw new Exception('Invalid card parameter');
 
 		// Prepare and fire at will
 		$params = array(
 			'email' => $card->getEmail(),
 			'amount' => $amount * 100,
 			'authorization_code' => $card->getAuthorizationCode(),
-			'pin' => $card_pin
 		);
+
+		if(!empty($card_pin)) $params['pin'] = $card_pin;
 
 		$response = $this->client->post($paystack['debit_card'], array('json' => $params));
 		$result = json_decode($response->getBody());
 
 		// If phone is required, submit phone
 		if(!empty($result->data) && $result->data->status === 'send_phone') {
-			$result = $this->submitPhone($card->getPhone(), $result->data->reference);
+			$result = $this->completeCharge($card, 'phone', $card->getPhone(), $result->data->reference);
 		}
 
 		if($result->status && $result->data->status == 'success') {
 			$auth_code = $result->data->authorization->authorization_code;
 
-			$card = (new Card)->getCard(array('authorization_code' => $auth_code));
-			if($card) $card->setAsBilled();
+			$card->setAsBilled();
 		}
 
 		return $result;
 	}
 
 	/**
-	 * Submit otp to complete a charge
-	 * @param string $otp
-	 * @param string $reference
+	 * Send info to complete a charge
+	 * @param string|Card $card Card object or card id
+	 * @param string $action phone|otp|pin
+	 * @param string $info Information needed to complete charge
+	 * @param string $reference Transaction reference
 	 * @return object Paystack response
 	 */
-	public function submitOTP(string $otp, string $reference) {
+	public function completeCharge($card, string $action, string $info, string $reference) {
+		$action = strtolower($action);
+		if(!in_array($action, array('phone', 'otp', 'pin'))) throw new \Exception('Unrecognized action parameter');
+
 		$paystack = $this->config->paystack;
+
+		// Get card from db
+		if(is_string($card)) {
+			$card = (new Card)->getCard(array(
+				'card_id' => $card
+			));
+		}
+		if(!($card instanceof Card)) throw new Exception('Invalid card parameter');
 
 		// Prepare and fire at will
 		$params = array(
-			'otp' => $otp,
+			$action => $info,
 			'reference' => $reference
 		);
 
-		$response = $this->client->post($paystack['submit_otp'], array('json' => $params));
+		$response = $this->client->post($paystack['submit_'.$action], array('json' => $params));
 		$result = json_decode($response->getBody());
 
 		// If phone is required, submit phone
 		if(!empty($result->data) && $result->data->status === 'send_phone') {
-			$result = $this->submitPhone($card->getPhone(), $result->data->reference);
+			// $result = $this->submitPhone($card->getPhone(), $result->data->reference);
+			$result = $this->completeCharge($card, 'phone', $card->getPhone(), $result->data->reference);
 		}
 
 		if($result->status && $result->data->status == 'success') {
 			$auth_code = $result->data->authorization->authorization_code;
 
-			$card = (new Card)->getCard(array('authorization_code' => $auth_code));
-			if($card) $card->setAsBilled();
-		}
-
-		return $result;
-	}
-
-	/**
-	 * Submit phone to complete a charge
-	 * @param string $phone
-	 * @param string $reference
-	 * @return object Paystack response
-	 */
-	public function submitPhone(string $phone, string $reference) {
-		$paystack = $this->config->paystack;
-
-		// Prepare and fire at will
-		$params = array(
-			'phone' => $phone,
-			'reference' => $reference
-		);
-
-		$response = $this->client->post($paystack['submit_phone'], array('json' => $params));
-		$result = json_decode($response->getBody());
-
-		if($result->status && $result->data->status == 'success') {
-			$auth_code = $result->data->authorization->authorization_code;
-
-			$card = (new Card)->getCard(array('authorization_code' => $auth_code));
-			if($card) $card->setAsBilled();
+			$card->setAsBilled();
 		}
 
 		return $result;
