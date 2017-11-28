@@ -199,7 +199,7 @@ class Card_Gate {
 				'card_id' => $card
 			));
 		}
-		if(!($card instanceof Card)) throw new Exception('Invalid card parameter');
+		if(!($card instanceof Card)) throw new \Exception('Invalid card parameter');
 
 		// Prepare and fire at will
 		$params = array(
