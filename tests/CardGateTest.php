@@ -29,6 +29,10 @@ class CardGateTest extends TestCase {
 
 	public function testAddCard(): Card {
 		$card = $this->gate->addCard($this->phone, $this->email, $this->card_number, $this->card_cvv, $this->exp_month, $this->exp_year);
+
+		$card->setMetaData(array(
+			'gt_card' => (bool) rand(0, 1)
+		));
 		
 		$this->assertInstanceOf(Card::class, $card);
 
@@ -43,6 +47,8 @@ class CardGateTest extends TestCase {
 		$this->assertCount(1, $this->gate->getCards($this->email));
 
 		$this->assertCount(1, $cards = $this->gate->getCards($this->phone));
+
+		$this->assertObjectHasAttribute('gt_card', $cards[0]->getMetaData());
 
 		return $cards[0];
 	}

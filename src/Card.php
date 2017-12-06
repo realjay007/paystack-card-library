@@ -118,6 +118,12 @@ class Card implements \JsonSerializable {
 	protected $billed;
 
 	/**
+	 * Any other data relating to the card, stored as an object
+	 * @var object
+	 */
+	protected $metadata;
+
+	/**
 	 * Date card was created
 	 * @var UTCDateTime
 	 */
@@ -244,6 +250,15 @@ class Card implements \JsonSerializable {
 	}
 
 	/**
+	 * Return metadata info
+	 * @return object
+	 */
+	public function getMetaData() {
+		if(empty($this->metadata)) return null;
+		else return (object) $this->metadata;
+	}
+
+	/**
 	 * Return date of creation
 	 * @return DateTime
 	 */
@@ -271,7 +286,7 @@ class Card implements \JsonSerializable {
 	 * @param array $exclude Array of class fields to skip initialisation
 	 * @return object $this
 	 */
-	protected function init(array $info = array(), array $exclude  = array()) {
+	protected function init(array $info = array(), array $exclude = array()) {
 		foreach ($info as $key => &$value) {
 			// Cast MongoDB BSON ObjectID's to strings
 			if($key === '_id') settype($value, 'string');
@@ -395,6 +410,19 @@ class Card implements \JsonSerializable {
 			'$set' => array('billed' => $this->billed)
 		));
 		if(!$result->isAcknowledged()) throw new RuntimeException('Unable to change card bill status');
+		else return $this;
+	}
+
+	/**
+	 * Set card metadata
+	 * @param mixed $data Map
+	 */
+	public function setMetaData($data) {
+		$this->metadata = (object) $data;
+		$result = self::$col->updateOne($this->getFilter(), array(
+			'$set' => array('metadata' => $this->metadata)
+		));
+		if(!$result->isAcknowledged()) throw new RuntimeException('Unable to set card metadata');
 		else return $this;
 	}
 

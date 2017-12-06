@@ -95,7 +95,8 @@ class Card_Gate {
 			'country_code' => $data->country_code
 		);
 		$card = new Card($card);
-		return $card->addCard();
+		$card->addCard();
+		return $card;
 	}
 
 	/**
