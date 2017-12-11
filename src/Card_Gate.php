@@ -209,9 +209,9 @@ class Card_Gate {
 		$result = json_decode($response->getBody());
 
 		// If phone is required, submit phone
-		if(!empty($result->data) && $result->data->status === 'send_phone') {
-			$result = $this->completeCharge($card, 'phone', $card->getPhone(), $result->data->reference);
-		}
+		// if(!empty($result->data) && $result->data->status === 'send_phone') {
+		// 	$result = $this->completeCharge($card, 'phone', $card->getPhone(), $result->data->reference);
+		// }
 
 		if($result->status && $result->data->status == 'success') {
 			$auth_code = $result->data->authorization->authorization_code;
@@ -254,10 +254,9 @@ class Card_Gate {
 		$result = json_decode($response->getBody());
 
 		// If phone is required, submit phone
-		if(!empty($result->data) && $result->data->status === 'send_phone') {
-			// $result = $this->submitPhone($card->getPhone(), $result->data->reference);
-			$result = $this->completeCharge($card, 'phone', $card->getPhone(), $result->data->reference);
-		}
+		// if(!empty($result->data) && $result->data->status === 'send_phone') {
+		// 	$result = $this->completeCharge($card, 'phone', $card->getPhone(), $result->data->reference);
+		// }
 
 		if($result->status && $result->data->status == 'success') {
 			$auth_code = $result->data->authorization->authorization_code;
