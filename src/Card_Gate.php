@@ -100,17 +100,59 @@ class Card_Gate {
 	}
 
 	/**
+	 * Get a card
+	 * @param mixed $card Card id or array filter
+	 * @return mixed Card object or null
+	 */
+	public function getCard($card) {
+		if(is_string($card)) {
+			$card = array('card_id' => $card);
+		}
+		return (new Card)->getCard($card);
+	}
+
+	/**
+	 * Check if a card exists
+	 * @param mixed $card Card id or array filter
+	 * @return bool
+	 */
+	public function cardExists($card): bool {
+		if(is_string($card)) {
+			$card = array('card_id' => $card);
+		}
+		return (bool) (new Card)->countCards($card);
+	}
+
+	/**
 	 * Get a user's cards
-	 * @param string $email_or_phone
+	 * @param mixed $query If string, treated as phone or email, else as filter
 	 * @return array
 	 */
-	public function getCards(string $email_or_phone): array {
-		$email_or_phone = strtolower(trim($email_or_phone));
-		if(filter_var($email_or_phone, FILTER_VALIDATE_EMAIL)) {
-			$query = array('email' => $email_or_phone);
+	public function getCards($query): array {
+		if(is_string($query)) {
+			$query = trim($query);
+			if(filter_var($query, FILTER_VALIDATE_EMAIL)) {
+				$query = array('email' => $query);
+			}
+			else $query = array('phone' => $query);
 		}
-		else $query = array('phone' => $email_or_phone);
 		return (new Card)->getCards($query);
+	}
+
+	/**
+	 * Count the amount of cards owned by user
+	 * @param mixed $query If string, treated as phone or email, else as filter
+	 * @return int
+	 */
+	public function countCards($query): int {
+		if(is_string($query)) {
+			$query = trim($query);
+			if(filter_var($query, FILTER_VALIDATE_EMAIL)) {
+				$query = array('email' => $query);
+			}
+			else $query = array('phone' => $query);
+		}
+		return (new Card)->countCards($query);
 	}
 
 	/**
