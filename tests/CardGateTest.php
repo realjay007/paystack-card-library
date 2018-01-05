@@ -42,6 +42,15 @@ class CardGateTest extends TestCase {
 	/**
 	 * @depends testAddCard
 	 */
+	public function testGetCardFromNumber() {
+		$card = $this->gate->getCardFromNumber($this->card_number);
+
+		$this->assertInstanceOf(Card::class, $card);
+	}
+
+	/**
+	 * @depends testAddCard
+	 */
 	public function testGetCards($card) {
 
 		$this->assertEquals(1, $this->gate->countCards($this->email));
@@ -63,9 +72,9 @@ class CardGateTest extends TestCase {
 
 		$result = $this->gate->debitCard($card, $amount);
 
-		$this->assertObjectHasAttribute('data', $result);
-
 		// file_put_contents(__DIR__.'/log.txt', json_encode($result));
+
+		$this->assertObjectHasAttribute('data', $result);
 
 		$complete_trans = function($result) use ($card) {
 			static $runs = 0;
@@ -83,6 +92,15 @@ class CardGateTest extends TestCase {
 		$this->assertContains($result->data->status, array('success', 'failed', 'pending'));
 
 		return array($result, $card);
+	}
+
+	/**
+	 * @depends testDebitCard
+	 */
+	public function testDebitCardAgain($params) {
+		list($result, $card) = $params;
+
+		return $this->testDebitCard($card);
 	}
 
 	/**

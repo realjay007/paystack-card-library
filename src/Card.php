@@ -427,6 +427,19 @@ class Card implements \JsonSerializable {
 	}
 
 	/**
+	 * Change resuability status of the card
+	 * @param bool $reusable
+	 */
+	public function setReusable(bool $reusable): self {
+		$this->reusable = $reusable;
+		$result = self::$col->updateOne($this->getFilter(), array(
+			'$set' => array('reusable' => $this->reusable)
+		));
+		if(!$result->isAcknowledged()) throw new RuntimeException('Unable to change card resuability status');
+		else return $this;
+	}
+
+	/**
 	 * Delete card
 	 * @return self
 	 */

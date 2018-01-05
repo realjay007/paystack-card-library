@@ -60,6 +60,9 @@ class Card_Gate {
 	public function addCard(string $phone, string $email, string $card_number, string $cvv, string $exp_month, string $exp_year) {
 		$paystack = $this->config->paystack;
 
+		// Strip whitespace from card number
+		$card_number = preg_replace('/\s+/', '', $card_number);
+
 		// Tokenise the card
 		$params = array(
 			'email' => $email,
@@ -86,7 +89,10 @@ class Card_Gate {
 			'card_type' => $data->card_type,
 			'first_six' => $data->bin,
 			'last_four' => $data->last4,
-			'hashed_card_number' => sha1($card_number),
+			'hashed_card_number' => array(
+				'hash_function' => 'sha1',
+				'value' => sha1($card_number)
+			),
 			'exp_month' => $data->exp_month,
 			'exp_year' => $data->exp_year,
 			'bank' => $data->bank,
@@ -121,6 +127,30 @@ class Card_Gate {
 			$card = array('card_id' => $card);
 		}
 		return (bool) (new Card)->countCards($card);
+	}
+
+	/**
+	 * Check if a card with specified card number exists
+	 * @param string $card_number
+	 * @return mixed Card object or null
+	 */
+	public function getCardFromNumber(string $card_number) {
+		// Strip whitespace
+		$card_number = preg_replace('/\s+/', '', $card_number);
+
+		$first_six = substr($card_number, 0, 6);
+		$last_four = substr($card_number, -4);
+		$hash = sha1($card_number);
+
+		// Prepare and fire query
+		$query = array(
+			'hashed_card_number.value' => $hash,
+			'first_six' => $first_six,
+			'last_four' => $last_four
+		);
+
+		$card = (new Card)->getCard($query);
+		return $card;
 	}
 
 	/**
@@ -205,13 +235,11 @@ class Card_Gate {
 
 		if(!empty($card_pin)) $params['pin'] = $card_pin;
 
-		$response = $this->client->post($paystack['debit_card'], array('json' => $params));
+		// Call endpoint based on card reusability
+		$url = ($card->isReusable() && $card->hasBeenBilled())? 'debit_reusable_card' : 'debit_card';
+		$url = $paystack[$url];
+		$response = $this->client->post($url, array('json' => $params));
 		$result = json_decode($response->getBody());
-
-		// If phone is required, submit phone
-		// if(!empty($result->data) && $result->data->status === 'send_phone') {
-		// 	$result = $this->completeCharge($card, 'phone', $card->getPhone(), $result->data->reference);
-		// }
 
 		if($result->status && $result->data->status == 'success') {
 			$auth_code = $result->data->authorization->authorization_code;

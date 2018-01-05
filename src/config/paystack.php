@@ -9,9 +9,6 @@
 
 $config = array();
 
-// Secret key used for authentication
-// $config['secret_key'] = 'sk_test_ae491bbb23c3a63a7c3e22effcac206e5e8eedab';
-
 // Paystack base uri
 $config['base_uri'] = 'https://api.paystack.co';
 
@@ -23,6 +20,9 @@ $config['delete_card'] = '/customer/deactivate_authorization';
 
 // Debit card
 $config['debit_card'] = '/charge';
+
+// Debit reusable cards
+$config['debit_reusable_card'] = '/transaction/charge_authorization';
 
 // Submit OTP
 $config['submit_otp'] = '/charge/submit_otp';
