@@ -89,8 +89,8 @@ class Card_Gate {
 			'card_type' => $data->card_type,
 			'first_six' => $data->bin,
 			'last_four' => $data->last4,
-			'hashed_card_number' => array(
-				'hash_function' => 'sha1',
+			'hashed_card' => array(
+				'function' => 'sha1',
 				'value' => sha1($card_number)
 			),
 			'exp_month' => $data->exp_month,
@@ -144,7 +144,7 @@ class Card_Gate {
 
 		// Prepare and fire query
 		$query = array(
-			'hashed_card_number.value' => $hash,
+			'hashed_card.value' => $hash,
 			'first_six' => $first_six,
 			'last_four' => $last_four
 		);

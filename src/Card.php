@@ -69,10 +69,12 @@ class Card implements \JsonSerializable {
 	protected $last_four;
 
 	/**
-	 * Hashed card number
-	 * @var string
+	 * Hashed card details
+	 * An object containing fields "function" - the hash function used
+	 * and "value" - the hash value
+	 * @var object
 	 */
-	protected $hashed_card_number;
+	protected $hashed_card;
 
 	/**
 	 * Month of card expiry in PHP 'm' format
@@ -194,11 +196,11 @@ class Card implements \JsonSerializable {
 	}
 
 	/**
-	 * Return hashed card number
-	 * @return string
+	 * Return hashed card
+	 * @return object
 	 */
-	public function hashedCardNumber(): string {
-		return $this->hashed_card_number;
+	public function hashedCard(): string {
+		return $this->hashed_card;
 	}
 
 	/**
