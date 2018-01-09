@@ -199,7 +199,7 @@ class Card implements \JsonSerializable {
 	 * Return hashed card
 	 * @return object
 	 */
-	public function getHashedCard(): string {
+	public function getHashedCard() {
 		return $this->hashed_card;
 	}
 
