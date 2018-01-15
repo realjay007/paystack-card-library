@@ -1,4 +1,4 @@
-# Paystack Cards PHP library
+# Paystack PHP Card library
 
 PHP Composer library for managing payment cards using paystack as payment processor. Uses mongoDB for storage.
 
