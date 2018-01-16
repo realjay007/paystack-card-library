@@ -333,6 +333,9 @@ class Card implements \JsonSerializable {
 	 */
 	public function jsonSerialize() {
 		$values = $this->getValues('array', array('_id'));
+		$exclude = array('authorization_code', 'hashed_card', 'signature', 'reusable');
+		foreach($exclude as $key) unset($values[$key]);
+
 		foreach ($values as $key => &$value) {
 			if($value instanceof UTCDateTime) $value = $value->toDateTime()->setTimeZone(new \DateTimeZone(date_default_timezone_get()))->format('Y-m-d H:i:s');
 		}
