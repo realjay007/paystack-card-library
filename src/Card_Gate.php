@@ -252,25 +252,16 @@ class Card_Gate {
 
 	/**
 	 * Send info to complete a charge
-	 * @param string|Card $card Card object or card id
 	 * @param string $action phone|otp|pin
 	 * @param string $info Information needed to complete charge
 	 * @param string $reference Transaction reference
 	 * @return object Paystack response
 	 */
-	public function completeCharge($card, string $action, string $info, string $reference) {
+	public function completeCharge(string $action, string $info, string $reference) {
 		$action = strtolower($action);
 		if(!in_array($action, array('phone', 'otp', 'pin'))) throw new \Exception('Unrecognized action parameter');
 
 		$paystack = $this->config->paystack;
-
-		// Get card from db
-		if(is_string($card)) {
-			$card = (new Card)->getCard(array(
-				'card_id' => $card
-			));
-		}
-		if(!($card instanceof Card)) throw new \Exception('Invalid card parameter');
 
 		// Prepare and fire at will
 		$params = array(
@@ -281,15 +272,11 @@ class Card_Gate {
 		$response = $this->client->post($paystack['submit_'.$action], array('json' => $params));
 		$result = json_decode($response->getBody());
 
-		// If phone is required, submit phone
-		// if(!empty($result->data) && $result->data->status === 'send_phone') {
-		// 	$result = $this->completeCharge($card, 'phone', $card->getPhone(), $result->data->reference);
-		// }
-
 		if($result->status && $result->data->status == 'success') {
 			$auth_code = $result->data->authorization->authorization_code;
 
-			$card->setAsBilled();
+			$card = (new Card)->getCard(array('authorization_code' => $auth_code));
+			if($card) $card->setAsBilled();
 		}
 
 		return $result;
