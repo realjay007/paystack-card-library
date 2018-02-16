@@ -48,6 +48,21 @@ class Card_Gate {
 	}
 
 	/**
+	 * Set gate configuration
+	 * @param array $config Configuration map
+	 *  'allow_reusable': Allow card reusabilty, debiting billed cards if supported
+	 */
+	public function setConfig(array $config) {
+		$config = array_filter($config, function($k) {
+			return !in_array($k, array('card_collection'));
+		}, ARRAY_FILTER_USE_KEY);
+
+		foreach ($config as $key => $value) {
+			$this->config->$key = $value;
+		}
+	}
+
+	/**
 	 * Tokenise card and add to db
 	 * @param string $phone User's phone number
 	 * @param string $email Card owner's email, used as user id
@@ -235,8 +250,9 @@ class Card_Gate {
 
 		if(!empty($card_pin)) $params['pin'] = $card_pin;
 
-		// Call endpoint based on card reusability
-		$url = ($card->isReusable() && $card->hasBeenBilled())? 'debit_reusable_card' : 'debit_card';
+		// Call endpoint based on card reusability and gate config
+		$allow_reusable = $this->config->allow_reusable ?? false;
+		$url = ($card->isReusable() && $card->hasBeenBilled() && $allow_reusable)? 'debit_reusable_card' : 'debit_card';
 		$url = $paystack[$url];
 		$response = $this->client->post($url, array('json' => $params));
 		$result = json_decode($response->getBody());
