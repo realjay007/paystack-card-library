@@ -256,7 +256,7 @@ class Card implements \JsonSerializable {
 	 * @return object
 	 */
 	public function getMetaData() {
-		if(empty($this->metadata)) return null;
+		if(empty($this->metadata)) return new \stdClass;
 		else return (object) $this->metadata;
 	}
 
