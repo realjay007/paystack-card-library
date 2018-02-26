@@ -305,7 +305,7 @@ class Card implements \JsonSerializable {
 	 * @param array $exclude Array of class properties to exclude from data to return
 	 * @return mixed Formatted data
 	 */
-	protected function getValues(string $format = 'array', array $exclude = array()) {
+	public function getValues(string $format = 'array', array $exclude = array()) {
 		$values = array();
 		foreach ($this as $key => $value) {
 			if(!(is_null($value) || in_array($key, $exclude))) {
@@ -332,9 +332,7 @@ class Card implements \JsonSerializable {
 	 * @return array
 	 */
 	public function jsonSerialize() {
-		$values = $this->getValues('array', array('_id'));
-		$exclude = array('authorization_code', 'hashed_card', 'signature', 'reusable');
-		foreach($exclude as $key) unset($values[$key]);
+		$values = $this->getValues('array', array('_id', 'authorization_code', 'hashed_card', 'signature', 'reusable'));
 
 		foreach ($values as $key => &$value) {
 			if($value instanceof UTCDateTime) $value = $value->toDateTime()->setTimeZone(new \DateTimeZone(date_default_timezone_get()))->format('Y-m-d H:i:s');
