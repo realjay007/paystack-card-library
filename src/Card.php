@@ -390,9 +390,9 @@ class Card implements \JsonSerializable {
 	 */
 	public function addCard(): self {
 		// Set up defaults
-		$this->date_created = new UTCDateTime(microtime(true)*1000);
+		$this->date_created = $this->date_created ?? new UTCDateTime(microtime(true)*1000);
 		$this->billed = $this->billed ?? false;
-		$this->card_id = $this->getUniqId('card_id', 8, 8);
+		$this->card_id = $this->card_id ?? $this->getUniqId('card_id', 8, 8);
 
 		// Add to db
 		$result = self::$col->insertOne($this->getValues());

@@ -64,9 +64,12 @@ class Card_Gate {
 	 * @param string $cvv
 	 * @param string $exp_month
 	 * @param string exp_year
+	 * @param string $card_id Optional card_id to set on card
 	 * @return Card on success, stdClass on failure
 	 */
-	public function addCard(string $phone, string $email, string $card_number, string $cvv, string $exp_month, string $exp_year) {
+	public function addCard(string $phone, string $email = '', string $card_number = '', string $cvv = '', 
+		string $exp_month = '', string $exp_year = '', string $card_id = ''
+	) {
 		$paystack = $this->config->paystack;
 
 		// Strip whitespace from card number
@@ -109,6 +112,7 @@ class Card_Gate {
 			'reusable' => $data->reusable,
 			'country_code' => $data->country_code
 		);
+		if(!empty($card_id)) $card['card_id'] = $card_id;
 		$card = new Card($card);
 		$card->addCard();
 		return $card;
