@@ -249,7 +249,7 @@ class Card_Gate {
 		if(!empty($card_pin)) $params['pin'] = $card_pin;
 
 		// Call endpoint based on card reusability and gate config
-		$allow_reusable = $this->config->allow_reusable;
+		$allow_reusable = $this->config->allow_reusable ?? true;
 		$url = ($card->isReusable() && $card->hasBeenBilled() && $allow_reusable)? 'debit_reusable_card' : 'debit_card';
 		$url = $paystack[$url];
 		$response = $this->client->post($url, array('json' => $params));
