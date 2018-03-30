@@ -298,7 +298,7 @@ class Card_Gate {
 
 	/**
 	 * Check transaction status
-	 * @param $string $reference
+	 * @param string $reference
 	 * @return object paystack response
 	 */
 	public function checkStatus(string $reference) {
@@ -308,7 +308,29 @@ class Card_Gate {
 		$response = $this->client->get($paystack['tranx_status']($reference));
 		$result = json_decode($response->getBody());
 
-		if($result->status && $result->data->status == 'success') {
+		if($result->status && $result->data->status === 'success') {
+			$auth_code = $result->data->authorization->authorization_code;
+
+			$card = (new Card)->getCard(array('authorization_code' => $auth_code));
+			if($card) $card->setAsBilled();
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Verify transaction
+	 * @param string $reference
+	 * @return object Paystack response
+	 */
+	public function verifyTransaction(string $reference) {
+		$paystack = $this->config->paystack;
+
+		// Fire away
+		$response = $this->client->get($paystack['verify_tranx']($reference));
+		$result = json_decode($response->getBody());
+
+		if($result->status && $result->data->status === 'success') {
 			$auth_code = $result->data->authorization->authorization_code;
 
 			$card = (new Card)->getCard(array('authorization_code' => $auth_code));

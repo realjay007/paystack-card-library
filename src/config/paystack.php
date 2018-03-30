@@ -34,6 +34,11 @@ $config['submit_phone'] = '/charge/submit_phone';
 $config['submit_pin'] = '/charge/submit_pin';
 
 // Check transaction status
-$config['tranx_status'] = function(string $ref) {
+$config['tranx_status'] = function(string $ref): string {
 	return '/charge/'.$ref;
+};
+
+// Verify transaction
+$config['verify_tranx'] = function(string $ref): string {
+	return '/transaction/verify/'.$ref;
 };
