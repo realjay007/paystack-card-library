@@ -227,9 +227,10 @@ class Card_Gate {
 	 * @param string|Card $card Card object or card id
 	 * @param float $amount in naira
 	 * @param string $card_pin Optional card pin
+	 * @param array $add_fields Assoc array of additional fields to include in the request
 	 * @return object Paystack response
 	 */
-	public function debitCard($card, float $amount, string $card_pin = '') {
+	public function debitCard($card, float $amount, string $card_pin = '', $add_fields = null) {
 		$paystack = $this->config->paystack;
 		// Get card from db
 		if(is_string($card)) {
@@ -247,6 +248,10 @@ class Card_Gate {
 		);
 
 		if(!empty($card_pin)) $params['pin'] = $card_pin;
+		if($add_fields) {
+			$add_fields = (array) $add_fields;
+			$params = array_merge($params, $add_fields);
+		}
 
 		// Call endpoint based on card reusability and gate config
 		$allow_reusable = $this->config->allow_reusable ?? true;
