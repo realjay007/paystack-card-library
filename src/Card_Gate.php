@@ -230,7 +230,7 @@ class Card_Gate {
 	 * @param array $add_fields Assoc array of additional fields to include in the request
 	 * @return object Paystack response
 	 */
-	public function debitCard($card, float $amount, string $card_pin = '', $add_fields = null) {
+	public function debitCard($card, float $amount, $card_pin = null, $add_fields = null) {
 		$paystack = $this->config->paystack;
 		// Get card from db
 		if(is_string($card)) {
@@ -247,7 +247,11 @@ class Card_Gate {
 			'authorization_code' => $card->getAuthorizationCode(),
 		);
 
-		if(!empty($card_pin)) $params['pin'] = $card_pin;
+		if(!is_string($card_pin)) {
+			$add_fields = $card_pin;
+			$card_pin = null;
+		}
+		if($card_pin) $params['pin'] = $card_pin;
 		if($add_fields) {
 			$add_fields = (array) $add_fields;
 			$params = array_merge($params, $add_fields);
