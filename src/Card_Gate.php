@@ -3,7 +3,7 @@ namespace PAY;
 
 // use GuzzleHttp\Exception\{ClientException, ServerException, RequestException};
 // use GuzzleHttp\Promise\Promise;
-use GuzzleHttp\Client;
+use GuzzleHttp\{Client, json_decode};
 
 /**
  * Card_Gate.php
@@ -58,7 +58,7 @@ class Card_Gate {
 
 	/**
 	 * Tokenise card and add to db
-	 * @param string $phone User's phone number
+	 * @param mixed $phone User's phone number or assoc array of params
 	 * @param string $email Card owner's email, used as user id
 	 * @param string $card_number
 	 * @param string $cvv
@@ -67,9 +67,10 @@ class Card_Gate {
 	 * @param string $card_id Optional card_id to set on card
 	 * @return Card on success, stdClass on failure
 	 */
-	public function addCard(string $phone, string $email = '', string $card_number = '', string $cvv = '', 
+	public function addCard($phone, string $email = '', string $card_number = '', string $cvv = '', 
 		string $exp_month = '', string $exp_year = '', string $card_id = ''
 	) {
+		if(is_array($phone)) extract($phone);
 		$paystack = $this->config->paystack;
 
 		// Strip whitespace from card number
@@ -80,7 +81,7 @@ class Card_Gate {
 			'email' => $email,
 			'card' => array(
 				'number' => $card_number,
-				'cvv' => $cvv,
+				'cvv' => $card_cvv ?? $cvv,
 				'expiry_month' => $exp_month,
 				'expiry_year' => $exp_year
 			)
@@ -111,6 +112,91 @@ class Card_Gate {
 			'signature' => $data->signature,
 			'reusable' => $data->reusable,
 			'country_code' => $data->country_code
+		);
+		if(!empty($card_id)) $card['card_id'] = $card_id;
+		$card = new Card($card);
+		$card->addCard();
+		return $card;
+	}
+
+	/**
+	 * Add a card by charging it
+	 * @param array $params Assoc array of params
+	 * "phone", "email", "card_number", "cvv", "exp_month", "exp_year" - See addCard method above
+	 * "amount" - Amount to charge
+	 * "subaccount" - Subaccount to recive charge
+	 * "metadata" - Additional transaction metadata
+	 * @return object paystack response
+	 */
+	public function addCardWithCharge($params) {
+		extract($params);
+		$paystack = $this->config->paystack;
+
+		$card_number = preg_replace('/\s+/', '', $card_number);
+		$payload = array(
+			'email' => $email,
+			'card' => array(
+				'number' => $card_number,
+				'cvv' => $card_cvv ?? $cvv,
+				'expiry_month' => $exp_month,
+				'expiry_year' => $exp_year
+			),
+			'amount' => $amount * 100
+		);
+		if(!empty($subaccount)) $payload['subaccount'] = $subaccount;
+		if(empty($metadata)) $metadata = array();
+		$payload['metadata'] = $metadata;
+
+		$payload['metadata']['_card_gate_private_'] = array(
+			'hashed_card' => array(
+				'function' => 'sha1',
+				'value' => sha1($card_number)
+			),
+			'phone' => $phone
+		);
+
+		$uri = $paystack['debit_card'];
+		$response = $this->client->post($uri, array('json' => $payload));
+		return json_decode((string) $response->getBody());
+	}
+
+	/**
+	 * Complete add card with charge
+	 * @param string $ref Payment reference
+	 * @param string $card Optional card id
+	 * @return \PAY\Card returns null if failed
+	 */
+	public function completeAddCardWithCharge(string $ref, string $card_id = '') {
+		$paystack = $this->config->paystack;
+
+		// Get tranx details
+		$uri = $paystack['verify_tranx']($ref);
+		$response = $this->client->get($uri);
+		$result = json_decode((string) $response->getBody());
+		if(empty($result->data) || empty($result->data->authorization)) return null;
+
+		// Create a new card object
+		$data = $result->data;
+		$auth = $data->authorization;
+		if(empty($auth->authorization_code)) return null;
+		$email = $data->customer->email;
+		$meta = $data->metadata->_card_gate_private_;
+		$phone = $meta->phone;
+		$hashed_card = $meta->hashed_card;
+		$card = array(
+			'email' => $email,
+			'phone' => $phone,
+			'authorization_code' => $auth->authorization_code,
+			'card_type' => $auth->card_type,
+			'first_six' => $auth->bin,
+			'last_four' => $auth->last4,
+			'hashed_card' => $hashed_card,
+			'exp_month' => $auth->exp_month,
+			'exp_year' => $auth->exp_year,
+			'bank' => $auth->bank,
+			'signature' => $auth->signature,
+			'reusable' => $auth->reusable,
+			'country_code' => $auth->country_code
 		);
 		if(!empty($card_id)) $card['card_id'] = $card_id;
 		$card = new Card($card);
