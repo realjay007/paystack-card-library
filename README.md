@@ -26,8 +26,16 @@ $card_number = '5078 5078 5078 5078 12';
 $card_cvv = '081';
 $exp_month = '08';
 $exp_year = '2019';
+// In case you want to set card_id yourself
+$card_id = '...';
 
-$card = $gate->addCard($phone, $email, $card_number, $card_cvv, $exp_month, $exp_year);
+$card = $gate->addCard($phone, $email, $card_number, $card_cvv, $exp_month, $exp_year, $card_id);
+// You can also pass the params using an assoc array
+$card = $gate->addCard(array(
+	'phone' => $phone, 'email' => $email, 'card_number' => $card_number,
+	'card_cvv' => $card_cvv, 'exp_month' => $exp_month,
+	'exp_year' => $exp_year, 'card_id' => $card_id
+));
 
 if($card instance of Card) {
     // Successful
@@ -36,6 +44,44 @@ else {
     // Failed
     echo $card->message;
 }
+```
+
+To add a card with charge, pass the params of the addCard method above in an assoc array with:
+* amount `<float>` - Amount to charge user
+* subaccount `<string>` - Optional, subaccount where funds should be remitted to
+* metadata `<string>` - Optional, additional transaction metadata
+Returns paystack response object
+```php
+$phone = '08123456789';
+$email = 'johndoe@gmail.com';
+$card_number = '5078 5078 5078 5078 12';
+$card_cvv = '081';
+$exp_month = '08';
+$exp_year = '2019';
+$amount = 25;
+
+$result = $gate->addCardWithCharge(array(
+	'phone' => $phone, 'email' => $email, 'card_number' => $card_number,
+	'card_cvv' => $card_cvv, 'exp_month' => $exp_month,
+	'exp_year' => $exp_year, 'amount' => $amount
+));
+
+```
+
+After adding card with charge, and making sure the returned transaction is complete,
+finish up the card adding process
+```php
+$reference = $result->data->reference;
+
+$card = $gate->completeCardWithCharge($reference);
+
+if($card) {
+    // Successful
+}
+else {
+    // Failed $card is null
+}
+
 ```
 
 To get cards belonging to a user, pass the email or phone to the getCards function. It returns an array of the user's cards or an empty array if none exists:
@@ -99,12 +145,11 @@ else {
 
 To complete a charge when more info has been collected from the user:
 ``` php
-$card_id = '...';
 $action = 'otp'; // Could be anyone of 'otp', 'pin', or 'phone';
 $info = '1234'; // Info collected from user
 $ref = '...'; // Transaction reference from when debit call was made
 
-$response = $gate->completeCharge($card_id, $action, $info, $ref);
+$response = $gate->completeCharge($action, $info, $ref);
 
 if($response->status) {
     $status = $response->data->status;
@@ -140,6 +185,12 @@ $status = $gate->checkStatus($ref);
 // Returns similar result to debitCard and completeCharge
 // Note: If transaction requires extra info to complete,
 // calling this function nullifies the transaction, marking it as failed
+```
+
+To get details of a transaction, pass reference to 'verifyTransaction':
+```php
+$transaction = $gate->verifyTransaction($ref);
+
 ```
 
 Card Object:

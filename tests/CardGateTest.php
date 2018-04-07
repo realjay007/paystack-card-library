@@ -39,10 +39,8 @@ class CardGateTest extends TestCase {
 		return $card;
 	}
 
-	/**
-	 * @depends testAddCard
-	 */
-	public function testAddCardWithCharge(Card $card): string {
+	
+	public function testAddCardWithCharge(): string {
 		$result = $this->gate->addCardWithCharge(array(
 			'phone' => $this->phone,
 			'email' => $this->email,
@@ -55,7 +53,7 @@ class CardGateTest extends TestCase {
 
 		$this->assertObjectHasAttribute('data', $result);
 
-		$complete_trans = function($result) use ($card) {
+		$complete_trans = function($result) {
 			static $runs = 0;
 			// file_put_contents('log'.$runs.'.txt', var_export($result, true));
 			if($runs > 4) throw new \Exception('Too many api calls');
