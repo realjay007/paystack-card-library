@@ -299,13 +299,23 @@ class Card_Gate {
 
 		// Make call if card has been billed
 		if($card->hasBeenBilled()) {
-			$params = array('authorization_code' => $card->getAuthorizationCode());
-			$response = $this->client->post($paystack['delete_card'], array('json' => $params));
-
-			$result = json_decode($response->getBody());
+			$result = $this->deactivateCard($card);
 		}
 
 		$card->deleteCard();
+	}
+
+	/**
+	 * Deactivate a card's auth code
+	 * @param Card $card object
+	 * @return object Paystack response
+	 */
+	public function deactivateCard(Card $card) {
+		$params = array('authorization_code' => $card->getAuthorizationCode());
+		$response = $this->client->post($paystack['delete_card'], array('json' => $params));
+
+		$result = json_decode($response->getBody());
+		return $result;
 	}
 
 	/**
