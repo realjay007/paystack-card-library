@@ -196,7 +196,8 @@ class Card_Gate {
 			'bank' => $auth->bank,
 			'signature' => $auth->signature,
 			'reusable' => $auth->reusable,
-			'country_code' => $auth->country_code
+			'country_code' => $auth->country_code,
+			'billed' => true
 		);
 		if(!empty($card_id)) $card['card_id'] = $card_id;
 		$card = new Card($card);
