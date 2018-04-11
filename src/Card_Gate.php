@@ -295,7 +295,7 @@ class Card_Gate {
 				'card_id' => $card
 			));
 		}
-		if(!($card instanceof Card)) throw new Exception('Invalid card paramter');
+		if(!($card instanceof Card)) return;
 
 		// Make call if card has been billed
 		if($card->hasBeenBilled()) {

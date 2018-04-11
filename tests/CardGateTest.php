@@ -29,7 +29,7 @@ class CardGateTest extends TestCase {
 
 	public function testAddCard(): Card {
 		$card = $this->gate->addCard($this->phone, $this->email, $this->card_number, $this->card_cvv, $this->exp_month, $this->exp_year);
-
+		file_put_contents(__DIR__.'/log.txt', json_encode($card));
 		$card->setMetaData(array(
 			'gt_card' => (bool) rand(0, 1)
 		));
@@ -50,15 +50,15 @@ class CardGateTest extends TestCase {
 			'exp_year' => $this->exp_year,
 			'amount' => 25
 		));
-
+		file_put_contents(__DIR__.'/log.txt', json_encode($result));
 		$this->assertObjectHasAttribute('data', $result);
 
 		$complete_trans = function($result) {
 			static $runs = 0;
-			// file_put_contents('log'.$runs.'.txt', var_export($result, true));
 			if($runs > 4) throw new \Exception('Too many api calls');
 			$result = $this->gate->completeCharge($info = substr($result->data->status, 5), $this->$info, $result->data->reference);
 			++$runs;
+			file_put_contents('log'.$runs.'.txt', var_export($result, true));
 			return $result;
 		};
 
@@ -68,7 +68,7 @@ class CardGateTest extends TestCase {
 
 		$this->assertContains($result->data->status, array('success', 'failed'));
 		$this->assertObjectHasAttribute('reference', $result->data);
-		return $result->data->reference;	
+		return $result->data->reference;
 	}
 
 	/**
@@ -118,16 +118,16 @@ class CardGateTest extends TestCase {
 
 		$result = $this->gate->debitCard($card, $amount);
 
-		// file_put_contents(__DIR__.'/log.txt', json_encode($result));
+		file_put_contents(__DIR__.'/log.txt', json_encode($result));
 
 		$this->assertObjectHasAttribute('data', $result);
 
 		$complete_trans = function($result) use ($card) {
 			static $runs = 0;
-			// file_put_contents('log'.$runs.'.txt', var_export($result, true));
 			if($runs > 4) throw new \Exception('Too many api calls');
 			$result = $this->gate->completeCharge($info = substr($result->data->status, 5), $this->$info, $result->data->reference);
 			++$runs;
+			file_put_contents('log'.$runs.'.txt', var_export($result, true));
 			return $result;
 		};
 
