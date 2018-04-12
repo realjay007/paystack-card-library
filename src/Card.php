@@ -216,7 +216,7 @@ class Card implements \JsonSerializable {
 	 * @return string
 	 */
 	public function getExpYear(): string {
-		return $this->year;
+		return $this->exp_year;
 	}
 
 	/**
