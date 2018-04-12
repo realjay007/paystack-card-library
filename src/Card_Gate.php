@@ -313,7 +313,7 @@ class Card_Gate {
 	 */
 	public function deactivateCard(Card $card) {
 		$params = array('authorization_code' => $card->getAuthorizationCode());
-		$response = $this->client->post($paystack['delete_card'], array('json' => $params));
+		$response = $this->client->post($this->config->paystack['delete_card'], array('json' => $params));
 
 		$result = json_decode($response->getBody());
 		return $result;
